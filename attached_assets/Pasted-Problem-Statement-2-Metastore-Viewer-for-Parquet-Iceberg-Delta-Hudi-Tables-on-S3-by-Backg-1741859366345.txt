@@ -1,0 +1,65 @@
+Problem Statement 2 - Metastore Viewer for Parquet, 
+Iceberg, Delta & Hudi Tables on S3 -by 
+Background 
+E6data leverages  lakehouse formats  on object stores  and requires an efficient 
+way to explore metadata without relying on traditional metastore services. While 
+many metastores allow registering  Parquet, Iceberg,  Delta, and Hudi  tables, most 
+do not support metadata exploration when only a  storage  location  (such as an S3 
+bucket containing Iceberg tables) is provided. 
+Problem Statement 
+Develop a  web-based metastore viewer  that enables  users to provide an  S3 (or 
+Azure Object Store / MinIO) bucket path  containing  Parquet, Iceberg, Delta, or 
+Hudi  tables and retrieve structured metadata, including  (but not limited to): 
+● 
+ Table Schema  : Column names, data types, partition  keys 
+● 
+ Table Properties  : Format-specific configurations (e.g.,  Iceberg’s manifest 
+files, Delta’s transaction logs) 
+● 
+ Partition Details  : Partition columns, pruning statistics 
+● 
+ Versioning & Snapshots  : Iceberg’s metadata.json ,  Delta’s checkpoint files 
+● 
+ Key Metrics  : File sizes, row counts, storage optimizations 
+Requirements 
+1.  Backend 
+● 
+ Read  lakehouse file metadata  directly from S3 (or  other object stores) 
+● 
+ Parse metadata files (e.g., Iceberg manifests, Delta logs) to extract table 
+details 
+● 
+ Expose a RESTful API for the frontend 
+2.  Frontend 
+● 
+ Accept S3 (or other object store) paths to fetch metadata 
+● 
+ Provide an interactive UI to browse schemas, partitions, and snapshots 
+● 
+ Display sample data from the table 
+● 
+ Visualize table evolution and statistics 
+3.  Tech Stack 
+● 
+ Any library if used must be either open source or freeware for enterprise 
+use. 
+Bonus Features 
+● 
+ Trino Integration  : Execute queries directly on discovered  tables 
+● 
+ Metadata Comparison  : Track schema changes over time 
+Evaluation Criteria 
+● 
+ Functionality  : Ability to parse and display metadata  from object stores 
+● 
+ Usability  : Intuitive and user-friendly UI 
+● 
+ Performance  : Efficient handling of large and evolving  datasets 
+● 
+ Innovation  : Features such as snapshot comparison and  change 
+summaries are encouraged 
+Expected Outcome 
+A metastore viewer  that allows users to explore  Iceberg,  Delta, and other 
+lakehouse table metadata stored in object stores  ,  making it easier to manage and 
+analyze large-scale table formats without requiring a dedicated metastore 
+service.

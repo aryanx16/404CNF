@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>Metastore Viewer</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css" rel="stylesheet" />
+    <style>
+      /* Basic reset and loading styles */
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+      #loading-indicator {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        width: 100vw;
+        position: fixed;
+        top: 0;
+        left: 0;
+        background-color: #f9fafb;
+        z-index: 9999;
+        text-align: center;
+      }
+      .spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #e5e7eb;
+        border-radius: 50%;
+        border-top-color: #1f2937;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      .loading-message {
+        font-size: 16px;
+        font-weight: 500;
+        color: #111827;
+        margin-bottom: 10px;
+      }
+      .loading-submessage {
+        font-size: 14px;
+        color: #4b5563;
+        max-width: 400px;
+        margin: 0 auto;
+      }
+      .connection-issue {
+        display: none;
+        margin-top: 30px;
+        padding: 15px;
+        border-radius: 6px;
+        background-color: #fee2e2;
+        border: 1px solid #fecaca;
+        max-width: 450px;
+        text-align: left;
+      }
+      .connection-issue h3 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        color: #b91c1c;
+        font-size: 16px;
+      }
+      .connection-issue p {
+        margin: 0 0 10px 0;
+        color: #7f1d1d;
+        font-size: 14px;
+      }
+      /* Show connection issue warning after 10 seconds */
+      @keyframes showConnectionIssue {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      #root:not(:empty) + #loading-indicator {
+        display: none;
+      }
+    </style>
+    <script>
+      // Show connection issue message after 10 seconds if app hasn't loaded
+      setTimeout(() => {
+        const root = document.getElementById('root');
+        const connectionIssue = document.getElementById('connection-issue');
+        if (root && root.children.length === 0 && connectionIssue) {
+          connectionIssue.style.display = 'block';
+          connectionIssue.style.animation = 'showConnectionIssue 0.5s ease forwards';
+        }
+      }, 10000);
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <!-- Enhanced loading indicator with connection troubleshooting info -->
+    <div id="loading-indicator">
+      <div class="spinner"></div>
+      <p class="loading-message">Loading E6data Metastore Viewer</p>
+      <p class="loading-submessage">Please wait while we initialize the application...</p>
+      
+      <!-- Connection issue message that appears after 10 seconds -->
+      <div id="connection-issue" class="connection-issue">
+        <h3>Taking longer than expected?</h3>
+        <p>The application is trying to connect to the server. Please wait a moment.</p>
+        <p>If this persists, try the following:</p>
+        <ul style="margin-top: 0; padding-left: 20px; color: #7f1d1d;">
+          <li>Refresh the page</li>
+          <li>Check your internet connection</li>
+          <li>Try again in a few minutes</li>
+        </ul>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
