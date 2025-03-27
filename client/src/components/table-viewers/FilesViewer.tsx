@@ -16,28 +16,26 @@ export default function FilesViewer({ metadata }: FilesViewerProps) {
   // const [response, setResponse] = useState<AxiosResponse<any> | null>(null);
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   const [s3path, setS3path] = useState<string | null>(localStorage.getItem('s3path'));
-   const response = useRecoilValue(metadataAtom)
+  const response = useRecoilValue(metadataAtom)
   console.log(BACKEND_URL)
+
   useEffect( ()=>{
     try{
-      getresponse()
-      console.log("reredereed")
-      console.log("---------------")
-      // console.log(metadataa)
-      console.log(response)
+      // getresponse()
     }catch(e){
       console.log('Error fetching data',e)
     }
   },[s3path])
+
   async function getresponse(){
     const resp = await axios.get(`${BACKEND_URL}`,{
       params:{
         s3_url:s3path
       }
     })
-    // console.log(resp)
     // setResponse(resp)
   }
+  
   const fileAnalysis = {
     totalFiles: metadata.fileCount || 0,
     totalRecords: metadata.rowCount || 0,

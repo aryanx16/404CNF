@@ -6,8 +6,10 @@ interface TableFormatCardProps {
   metadata: TableMetadata;
 }
 
-export default function TableFormatCard({ metadata }: TableFormatCardProps) {
+export default function TableFormatCard({ metadata, data }) {
   const formatIcon = getFormatIcon(metadata.format as any);
+
+  console.log(data);
   
   return (
     <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-4 hover:shadow-md transition-shadow">
@@ -22,7 +24,7 @@ export default function TableFormatCard({ metadata }: TableFormatCardProps) {
       </div>
       <div className="mt-2 text-sm text-neutral-600">
         {metadata.properties?.formatVersion && (
-          <p>Format Version: {metadata.properties.formatVersion}</p>
+          <p>Format Version: {data?.format_version}</p>
         )}
         {metadata.format === 'iceberg' && (
           <p>Spec: org.apache.iceberg.{metadata.properties?.formatVersion || 'v2'}</p>
