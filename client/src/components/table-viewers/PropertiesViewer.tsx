@@ -1,6 +1,8 @@
 import React from 'react';
 import { TableMetadata } from '@shared/schema';
 import { formatBytes, getFormatDescription } from '@/lib/formatUtils';
+import { metadataAtom } from '@/atoms/metadataAtom';
+import { useRecoilValue } from 'recoil';
 
 interface PropertiesViewerProps {
   metadata: TableMetadata;
@@ -9,7 +11,7 @@ interface PropertiesViewerProps {
 
 export default function PropertiesViewer({ metadata, isPreview = false }: PropertiesViewerProps) {
   // Check if we have properties data
-  
+    const response = useRecoilValue(metadataAtom);
   if (!metadata.properties) {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-neutral-200 mb-6 p-8 text-center">
