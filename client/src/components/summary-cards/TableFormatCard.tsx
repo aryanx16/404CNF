@@ -27,7 +27,7 @@ export default function TableFormatCard({ metadata, data }) {
           <p>Format Version: {data?.format_version}</p>
         )}
         {metadata.format === 'iceberg' && (
-          <p>Spec: org.apache.iceberg.{metadata.properties?.formatVersion || 'v2'}</p>
+          <p>Spec: org.apache.iceberg.{data?.format_version || 'v2'}</p>
         )}
         {metadata.format === 'delta' && (
           <p>Spec: io.delta.{metadata.properties?.formatVersion || 'v1'}</p>

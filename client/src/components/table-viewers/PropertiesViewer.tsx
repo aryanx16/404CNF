@@ -9,7 +9,7 @@ interface PropertiesViewerProps {
   isPreview?: boolean;
 }
 
-export default function PropertiesViewer({ metadata, isPreview = false }: PropertiesViewerProps) {
+export default function PropertiesViewer({ metadata, isPreview = false, responseData }) {
   // Check if we have properties data
     const response = useRecoilValue(metadataAtom);
   if (!metadata.properties) {
@@ -24,8 +24,17 @@ export default function PropertiesViewer({ metadata, isPreview = false }: Proper
     );
   }
   
-  const { format, formatVersion, location, manifestFiles, snapshotInfo, formatConfig, metrics } = metadata.properties;
-  
+  const { format, manifestFiles, snapshotInfo, formatConfig } = metadata.properties;
+  console.log(responseData)
+  const formatVersion = responseData?.format_version;
+  const location = responseData?.location
+  const metrics = responseData?.key_metrics;
+
+  const dataSizeBytes = metrics?.total_data_storage_bytes;
+  const deleteSizeBytes = metrics?.total_delete_storage_bytes ?? 0; 
+  const totalSizeBytes = (dataSizeBytes !== undefined && dataSizeBytes !== null) 
+                          ? dataSizeBytes + deleteSizeBytes 
+                          : null;
   // For preview mode, show a simplified view
   if (isPreview) {
     return (
@@ -57,7 +66,7 @@ export default function PropertiesViewer({ metadata, isPreview = false }: Proper
               {metrics && (
                 <>
                   <div className="font-medium">Metadata Size:</div>
-                  <div>{metrics.metadataSize ? formatBytes(metrics.metadataSize) : 'Unknown'}</div>
+                  <div>{totalSizeBytes ? formatBytes(totalSizeBytes) : 'Unknown'}</div>
                 </>
               )}
             </div>
