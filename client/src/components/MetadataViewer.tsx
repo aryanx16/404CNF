@@ -55,7 +55,7 @@ export default function MetadataViewer({ metadata, activeTab, isLoading, onChang
 
   // Properties tab
   if (activeTab === 'properties') {
-    return <PropertiesViewer metadata={metadata} />;
+    return <PropertiesViewer metadata={metadata} responseData={response?.data} />;
   }
 
   // Files tab
