@@ -5,6 +5,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
+import { RecoilRoot } from "recoil";
 
 // Create a context for user-related data
 export const UserContext = React.createContext<{
@@ -31,12 +32,14 @@ function App() {
   const [userId, setUserId] = useState<number | null>(1);
 
   return (
+       <RecoilRoot>
     <QueryClientProvider client={queryClient}>
       <UserContext.Provider value={{ userId, setUserId }}>
         <Router />
         <Toaster />
       </UserContext.Provider>
     </QueryClientProvider>
+       </RecoilRoot>
   );
 }
 

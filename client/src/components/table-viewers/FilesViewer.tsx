@@ -1,16 +1,43 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { TableMetadata } from '@shared/schema';
 import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
-
+import axios, { AxiosResponse } from 'axios'
+import { formatLargeNumber } from '@/lib/formatUtils';
+import { useRecoilValue } from 'recoil';
+import { metadataAtom } from '@/atoms/metadataAtom';
 interface FilesViewerProps {
   metadata: TableMetadata;
 }
 
 export default function FilesViewer({ metadata }: FilesViewerProps) {
   const [searchTerm, setSearchTerm] = useState('');
-
+  // const [response, setResponse] = useState<AxiosResponse<any> | null>(null);
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+  const [s3path, setS3path] = useState<string | null>(localStorage.getItem('s3path'));
+   const response = useRecoilValue(metadataAtom)
+  console.log(BACKEND_URL)
+  useEffect( ()=>{
+    try{
+      getresponse()
+      console.log("reredereed")
+      console.log("---------------")
+      // console.log(metadataa)
+      console.log(response)
+    }catch(e){
+      console.log('Error fetching data',e)
+    }
+  },[s3path])
+  async function getresponse(){
+    const resp = await axios.get(`${BACKEND_URL}`,{
+      params:{
+        s3_url:s3path
+      }
+    })
+    // console.log(resp)
+    // setResponse(resp)
+  }
   const fileAnalysis = {
     totalFiles: metadata.fileCount || 0,
     totalRecords: metadata.rowCount || 0,
@@ -63,22 +90,22 @@ export default function FilesViewer({ metadata }: FilesViewerProps) {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
           <div className="text-xl font-semibold  text-black">Total Files</div>
-          <div className="text-2xl font-semibold font-mono text-black mt-1">{fileAnalysis.totalFiles}</div>
+          <div className="text-2xl font-semibold font-mono text-black mt-1">{response? formatLargeNumber(response?.data.key_metrics.total_data_files) : (<><div className='w-14 rounded-lg h-3 animate-pulse bg-gray-200'></div></>)}</div>
           <div className="text-sm text-gray-500 font-semibold mt-1">Number of data files</div>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
           <div className="text-xl font-semibold  text-black">Total Records</div>
-          <div className="text-2xl font-mono font-semibold text-gray-900 mt-1">{fileAnalysis.totalRecords.toLocaleString()}</div>
+          <div className="text-2xl font-mono font-semibold text-gray-900 mt-1">{response?formatLargeNumber(response?.data?.key_metrics.approx_live_records) : (<><div className='w-14 rounded-lg h-3 animate-pulse bg-gray-200'></div></>)}</div>
           <div className="text-sm text-gray-500 font-semibold mt-1">Across all files</div>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
           <div className="text-xl font-semibold  text-black">Avg Records/File</div>
-          <div className="text-2xl font-mono font-semibold text-gray-900 mt-1">{fileAnalysis.avgRecordsPerFile.toLocaleString()}</div>
+          <div className="text-2xl font-mono font-semibold text-gray-900 mt-1">{response? formatLargeNumber(response?.data.key_metrics.avg_live_records_per_data_file) : (<><div className='w-14 rounded-lg h-3 animate-pulse bg-gray-200'></div></>)}</div>
           <div className="text-sm text-gray-500 font-semibold mt-1">Average records per file</div>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
           <div className="text-xl font-semibold  text-black">Avg File Size</div>
-          <div className="text-2xl font-mono font-semibold text-gray-900 mt-1">{fileAnalysis.avgFileSize}</div>
+          <div className="text-2xl font-mono font-semibold text-gray-900 mt-1">{response? formatLargeNumber(response?.data.key_metrics.avg_data_file_size_mb) : (<><div className='w-14 rounded-lg h-3 animate-pulse bg-gray-200'></div></>)}</div>
           <div className="text-sm text-gray-500 font-semibold mt-1">Average size in MB</div>
         </div>
       </div>
