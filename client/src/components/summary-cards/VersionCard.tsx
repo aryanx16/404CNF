@@ -6,7 +6,7 @@ interface VersionCardProps {
   metadata: TableMetadata;
 }
 
-export default function VersionCard({ metadata }: VersionCardProps) {
+export default function VersionCard({ metadata, data }) {
   // If format doesn't support versioning (like plain Parquet) or no version info
   if (!metadata.currentVersion && metadata.format === 'parquet') {
     return (
@@ -29,8 +29,8 @@ export default function VersionCard({ metadata }: VersionCardProps) {
   }
   
   // For versioned formats (Iceberg, Delta, Hudi)
-  const latestVersion = metadata.versions?.find(v => v.isLatest);
-  const totalVersions = metadata.versions?.length || 0;
+  const latestVersion = data?.version_history.current_snapshot_summary;
+  const totalVersions = data?.version_history.total_snapshots;
   
   return (
     <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-4 hover:shadow-md transition-shadow">
@@ -47,7 +47,7 @@ export default function VersionCard({ metadata }: VersionCardProps) {
         </div>
       </div>
       <div className="mt-2 text-sm text-neutral-600">
-        <p>Last Updated: {latestVersion ? timeAgo(latestVersion.timestamp) : timeAgo(metadata.lastModified)}</p>
+        <p>Last Updated: {latestVersion ? timeAgo(latestVersion['timestamp-ms']) : timeAgo(metadata.lastModified)}</p>
         <p>Total {metadata.format === 'delta' ? 'Commits' : metadata.format === 'hudi' ? 'Commits' : 'Snapshots'}: {totalVersions}</p>
       </div>
     </div>

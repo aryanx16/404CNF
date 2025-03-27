@@ -6,7 +6,7 @@ interface SchemaViewerProps {
   isPreview?: boolean;
 }
 
-export default function SchemaViewer({ isPreview = false }: SchemaViewerProps) {
+export default function SchemaViewer({ isPreview = false, onChange }) {
   const response = useRecoilValue(metadataAtom);
   const fields = response?.data?.table_schema?.fields || [];
 
@@ -63,7 +63,7 @@ export default function SchemaViewer({ isPreview = false }: SchemaViewerProps) {
 
       {isPreview && fields.length > 5 && (
         <div className="p-3 text-center border-t border-neutral-200">
-          <button className="text-sm text-primary hover:text-blue-600">
+          <button className="text-sm text-primary hover:text-blue-600" onClick={() => onChange("schema")}>
             View all {fields.length} fields
           </button>
         </div>

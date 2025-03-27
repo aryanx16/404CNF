@@ -90,7 +90,8 @@ export default function Home() {
               <MetadataViewer 
                 metadata={safeMetadata} 
                 activeTab={activeTab} 
-                isLoading={isLoading} 
+                isLoading={isLoading}
+                onChange={(value) => setActiveTab(value as TabValue)}
               />
             )}
 

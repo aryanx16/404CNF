@@ -9,6 +9,7 @@ interface PropertiesViewerProps {
 
 export default function PropertiesViewer({ metadata, isPreview = false }: PropertiesViewerProps) {
   // Check if we have properties data
+  
   if (!metadata.properties) {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-neutral-200 mb-6 p-8 text-center">
