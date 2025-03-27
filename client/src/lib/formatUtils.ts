@@ -1,7 +1,29 @@
 /**
  * Utility functions for handling and formatting metadata
  */
+export const formatFileSize = (bytes: number, decimals = 2): string => {
+  // Handle cases where bytes might be undefined, null, or NaN from the API response
+  if (bytes === undefined || bytes === null || isNaN(bytes)) return 'N/A';
+  if (bytes === 0) return '0 Bytes';
 
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+  // Calculate the index for the size unit
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  // Ensure the index doesn't exceed the available units (e.g., for extremely large numbers)
+  const unitIndex = Math.min(i, sizes.length - 1);
+
+  // Calculate the size in the chosen unit and format it
+  return parseFloat((bytes / Math.pow(k, unitIndex)).toFixed(dm)) + ' ' + sizes[unitIndex];
+};
+
+// --- Keep your existing formatLargeNumber function ---
+// export const formatLargeNumber = (num: number): string => {
+//   // ... your existing implementation ...
+// };
 export type TableFormat = 'iceberg' | 'delta' | 'hudi' | 'parquet';
 
 // Format bytes to human-readable string

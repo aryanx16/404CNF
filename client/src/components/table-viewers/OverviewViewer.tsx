@@ -4,12 +4,12 @@ import TableFormatCard from '../summary-cards/TableFormatCard';
 import RowCountCard from '../summary-cards/RowCountCard';
 import StorageSizeCard from '../summary-cards/StorageSizeCard';
 import VersionCard from '../summary-cards/VersionCard';
-import { formatBytes } from '@/lib/formatUtils';
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import SchemaViewer from './SchemaViewer';
 import VersionViewer from './VersionViewer';
 import PartitionViewer from './PartitionViewer';
 import PropertiesViewer from './PropertiesViewer';
+import VersionHistoryChart from './VersionHistoryChart';
+import StorageDistributionChart from './StorageDistributionChart';
 
 const OverviewViewer = ({ metadata, responseData, onChange }) => {
   return (
@@ -17,79 +17,16 @@ const OverviewViewer = ({ metadata, responseData, onChange }) => {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
         <TableFormatCard metadata={metadata} data={responseData?.data}/>
-        <RowCountCard metadata={metadata} />
-        <StorageSizeCard metadata={metadata} />
+        <RowCountCard metadata={metadata} data={responseData?.data} />
+        <StorageSizeCard metadata={metadata} data={responseData?.data} />
         <VersionCard metadata={metadata} data={responseData?.data}/>
       </div>
 
       {/* Analytics Charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-4">
-          <h3 className="text-sm font-medium mb-4">Storage Distribution</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={[
-                    { name: 'Data Files', value: 1024 * 1024 * 500 }, // 500MB
-                    { name: 'Manifest Files', value: 1024 * 1024 * 50 }, // 50MB
-                    { name: 'Other Files', value: 1024 * 1024 * 10 } // 10MB
-                  ]}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {[0, 1, 2].map((index) => (
-                    <Cell key={`cell-${index}`} fill={['#3B82F6', '#10B981', '#F59E0B'][index]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value: any) => formatBytes(value)} />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+        <StorageDistributionChart responseData={responseData?.data} />
 
-        <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-4">
-          <h3 className="text-sm font-medium mb-4">Version History</h3>
-          {metadata.versions && metadata.versions.length > 0 && (
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={[
-                    { version: 'v5', changes: 12 },
-                    { version: 'v4', changes: 8 },
-                    { version: 'v3', changes: 15 },
-                    { version: 'v2', changes: 6 },
-                    { version: 'v1', changes: 10 }
-                  ]}
-                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="version" stroke="#64748b" />
-                  <YAxis stroke="#64748b" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      background: '#fff',
-                      border: '1px solid #e2e8f0',
-                      borderRadius: '6px',
-                      padding: '8px'
-                    }}
-                  />
-                  <Bar 
-                    dataKey="changes" 
-                    fill="#3B82F6" 
-                    name="File Changes"
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </div>
+        <VersionHistoryChart responseData={responseData?.data} />
       </div>
 
       {/* Schema Section */}
@@ -129,13 +66,13 @@ const OverviewViewer = ({ metadata, responseData, onChange }) => {
       )}
 
       {/* Version History Preview */}
-      <VersionViewer metadata={metadata} isPreview={true} />
+      <VersionViewer metadata={metadata} isPreview={true} responseData={responseData?.data} />
 
       {/* Partition Layout Preview */}
       <PartitionViewer metadata={metadata} isPreview={true} responseData={responseData?.data} />
 
       {/* Format Properties Preview */}
-      <PropertiesViewer metadata={metadata} isPreview={true} />
+      <PropertiesViewer metadata={metadata} isPreview={true} responseData={responseData?.data} />
     </>
   )
 }

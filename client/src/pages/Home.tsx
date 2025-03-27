@@ -71,12 +71,12 @@ export default function Home() {
           <PathInput onFetch={handleFetch} initialPath={path} />
 
           {/* Table Summary */}
-          {tableMetadata && (
+          {/* {tableMetadata && (
             <TableSummary 
               metadata={safeMetadata} 
               isLoading={isLoading} 
             />
-          )}
+          )} */}
 
           {/* Tab Navigation */}
           <TabNavigation 
