@@ -23,19 +23,20 @@ export default function PathInput({ onFetch, initialPath = '' }: PathInputProps)
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [response, setResponse] = useRecoilState(metadataAtom);
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-  const [s3path, setS3path] = useState<string | null>(localStorage.getItem('s3path'));
-
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (path.trim()) {
       onFetch(path.trim(), format);
+      localStorage.setItem("s3path", path);
+      localStorage.setItem("format", format);
+      getresponse()
     }
-    getresponse()
-    localStorage.setItem("s3path", path);
-    localStorage.setItem("format", format);
   };
-
+  
   async function getresponse() {
+    const s3path = localStorage.getItem('s3path');
+    console.log(s3path, format);
     const resp = await axios.get(`${BACKEND_URL}/${format}`, {
       params: {
         s3_url: s3path
