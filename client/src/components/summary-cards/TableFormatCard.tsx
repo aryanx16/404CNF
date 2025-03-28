@@ -17,7 +17,7 @@ export default function TableFormatCard({ metadata, data }) {
       <div className="flex justify-between items-start">
         <div>
           <h3 className="text-sm font-medium text-neutral-500">Table Format</h3>
-          <p className="mt-1 text-lg font-semibold">{tableFormat.charAt(0).toUpperCase() + tableFormat.slice(1)}</p>
+          <p className="mt-1 text-lg font-semibold">{tableFormat?.charAt(0).toUpperCase() + tableFormat?.slice(1)}</p>
         </div>
         <div className="text-blue-500">
           <i className={`${formatIcon} text-2xl`}></i>
