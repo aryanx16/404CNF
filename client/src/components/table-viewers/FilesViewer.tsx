@@ -96,7 +96,7 @@ export default function FilesViewer() {
   // --- Other Derived Data ---
   const keyMetrics = response?.data?.key_metrics;
   // Keep fileTypeData simple for now, just showing primary type if known
-  const primaryFileType = response?.data?.table_properties?.['write.parquet.compression-codec'] ? 'Parquet' : 'Unknown';
+  const primaryFileType = 'Parquet';
   const avgFileSizeMB = keyMetrics?.avg_data_file_size_mb;
   const avgRecordsPerFile = keyMetrics?.avg_live_records_per_data_file;
   const totalStorageBytes = keyMetrics?.total_data_storage_bytes;
@@ -177,7 +177,6 @@ export default function FilesViewer() {
             </div>
           </div>
 
-          {/* Table Size History Line Chart */}
           {/* Table Size History Line Chart */}
           <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
             <div className="text-xl font-semibold text-black mb-2">Table Size History</div>

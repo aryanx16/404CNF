@@ -32,7 +32,7 @@ export default function VersionHistoryChart({ responseData }: VersionHistoryChar
           const totalChanges = (isNaN(addedDataFiles) ? 0 : addedDataFiles) + 
                                (isNaN(addedDeleteFiles) ? 0 : addedDeleteFiles);
           
-          const sequenceNumber = snapshot['sequence-number'];
+          const sequenceNumber = snapshot['sequence-number'] || snapshot['snapshot-id'];
 
           // Return the object format expected by the chart
           return {

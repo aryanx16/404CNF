@@ -332,6 +332,8 @@ export default function PropertiesViewer({ responseData, isPreview = false }: Pr
                         const humanKey = `${key}_human`;
                         const displayValue = metrics[humanKey] !== undefined
                             ? metrics[humanKey]
+                            : typeof value === 'number' && (key.toLowerCase().includes('mb'))
+                            ? formatBytes(value*1000000)
                             : typeof value === 'number' && (key.toLowerCase().includes('size') || key.toLowerCase().includes('bytes'))
                             ? formatBytes(value)
                             : value?.toString() ?? <span className="text-neutral-400 text-base">0</span>;
@@ -339,11 +341,11 @@ export default function PropertiesViewer({ responseData, isPreview = false }: Pr
                         if (key.endsWith('_bytes') && metrics[humanKey] !== undefined) {
                             return null;
                         }
-
+                        console.log(humanKey, formatBytes(value))
                         return (
                             <div key={key} className="bg-neutral-50 p-3 rounded-md border border-neutral-200 flex flex-col">
                                 <span className="text-xs text-neutral-500">
-                                    {formatKey(key.replace('_human', '').replace('_bytes', ''))}
+                                    {formatKey(key.replace('_human', '').replace('_bytes', '').replace('_mb', ''))}
                                 </span>
                                 <span className="text-lg font-medium mt-1 text-neutral-800">
                                     {displayValue}

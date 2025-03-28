@@ -7,7 +7,8 @@ interface TableFormatCardProps {
 }
 
 export default function TableFormatCard({ metadata, data }) {
-  const formatIcon = getFormatIcon(metadata.format as any);
+  const tableFormat = data?.table_type.toLowerCase();
+  const formatIcon = getFormatIcon(tableFormat);
 
   console.log(data);
   
@@ -16,7 +17,7 @@ export default function TableFormatCard({ metadata, data }) {
       <div className="flex justify-between items-start">
         <div>
           <h3 className="text-sm font-medium text-neutral-500">Table Format</h3>
-          <p className="mt-1 text-lg font-semibold">{metadata.format.charAt(0).toUpperCase() + metadata.format.slice(1)}</p>
+          <p className="mt-1 text-lg font-semibold">{tableFormat.charAt(0).toUpperCase() + tableFormat.slice(1)}</p>
         </div>
         <div className="text-blue-500">
           <i className={`${formatIcon} text-2xl`}></i>
@@ -26,13 +27,13 @@ export default function TableFormatCard({ metadata, data }) {
         {metadata.properties?.formatVersion && (
           <p>Format Version: {data?.format_version}</p>
         )}
-        {metadata.format === 'iceberg' && (
+        {tableFormat === 'iceberg' && (
           <p>Spec: org.apache.iceberg.{data?.format_version || 'v2'}</p>
         )}
-        {metadata.format === 'delta' && (
+        {tableFormat === 'delta' && (
           <p>Spec: io.delta.{metadata.properties?.formatVersion || 'v1'}</p>
         )}
-        {metadata.format === 'hudi' && (
+        {tableFormat === 'hudi' && (
           <p>Type: {metadata.properties?.formatConfig?.["hoodie.table.type"] || 'COPY_ON_WRITE'}</p>
         )}
       </div>
