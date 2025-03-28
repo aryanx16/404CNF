@@ -11,10 +11,10 @@ export default function TabNavigation({ activeTab, onChange }: TabNavigationProp
     { id: 'files', label: 'Files' },
     { id: 'schema', label: 'Schema' },
     // { id: 'versions', label: 'Versions' },
-    { id: 'schema-history', label: 'Schema History' },
     { id: 'partitions', label: 'Partitions' },
     { id: 'properties', label: 'Properties' },
-    { id: 'sample-data', label: 'Sample Data' }
+    { id: 'sample-data', label: 'Sample Data' },
+    { id: 'schema-history', label: 'Schema History' },
   ];
   
   return (

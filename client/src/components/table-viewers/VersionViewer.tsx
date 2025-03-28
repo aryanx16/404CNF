@@ -25,9 +25,9 @@ export default function RecentVersionTimeline({ responseData }) {
 
   const latestSnapshotId = latestSnapshotSummary['snapshot-id'];
   // Take the first 3 snapshots (assuming they are ordered newest first)
-  const displaySnapshots = tableType.toLowerCase() === "iceberg" ? snapshots.slice(0, 3).reverse() : snapshots.slice(0, 3);
+  const displaySnapshots = snapshots.slice(0, 3);
 
-  // console.log("Displaying Snapshots:", displaySnapshots, "Latest ID:", latestSnapshotId);
+  console.log("Displaying Snapshots:", displaySnapshots, "Latest ID:", latestSnapshotId);
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-neutral-200 mb-6">

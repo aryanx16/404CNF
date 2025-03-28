@@ -40,7 +40,7 @@ export default function MetadataViewer({ metadata, activeTab, isLoading, onChang
 
   // Schema History tab
   if (activeTab === 'schema-history') {
-    return <SchemaHistoryViewer metadata={metadata} />;
+    return <SchemaHistoryViewer metadata={metadata} responseData={response?.data} />;
   }
 
   // Partitions tab
