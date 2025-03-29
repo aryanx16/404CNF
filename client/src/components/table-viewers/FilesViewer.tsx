@@ -92,6 +92,7 @@ export default function FilesViewer() {
     return { data: chartData, hasData: chartData.length > 0 && (dataFiles > 0 || deleteFiles > 0) };
   }, [response]);
 
+  const current_snapshot_summary = response?.data?.version_history?.current_snapshot_summary.summary;
 
   // --- Other Derived Data ---
   const keyMetrics = response?.data?.key_metrics;
@@ -101,6 +102,11 @@ export default function FilesViewer() {
   const avgRecordsPerFile = keyMetrics?.avg_live_records_per_data_file;
   const totalStorageBytes = keyMetrics?.total_data_storage_bytes;
   const approxLiveRecords = keyMetrics?.approx_live_records;
+  const approx_live_records = Number(current_snapshot_summary?.['total-records']) - Number(current_snapshot_summary?.['total-position-deletes']);
+  const total_data_files = Number(current_snapshot_summary?.['total-data-files']);
+  const total_delete_files = Number(current_snapshot_summary?.['total-delete-files']);
+
+  console.log(approx_live_records / total_data_files)
 
   // --- Constants ---
   const COLORS = ['#0088FE', '#FF8042', '#00C49F', '#FFB300', '#AF19FF']; // Adjusted order
@@ -142,9 +148,9 @@ export default function FilesViewer() {
       {/* Key Metrics Section */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         {/* Cards as before */}
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200"> <div className="text-xl font-semibold text-black">Total Files</div> <div className="text-2xl font-semibold font-mono text-black mt-1">{keyMetrics?.total_data_files !== undefined ? formatLargeNumber(keyMetrics.total_data_files + (keyMetrics.total_delete_files || 0)) : renderLoadingPulse()}</div> <div className="text-sm text-gray-500 font-semibold mt-1">Data + Delete files</div> </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200"> <div className="text-xl font-semibold text-black">Total Records</div> <div className="text-2xl font-mono font-semibold text-gray-900 mt-1">{keyMetrics?.approx_live_records !== undefined ? formatLargeNumber(keyMetrics.approx_live_records) : renderLoadingPulse()}</div> <div className="text-sm text-gray-500 font-semibold mt-1">Approx. live records</div> </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200"> <div className="text-xl font-semibold text-black">Avg Records/File</div> <div className="text-2xl font-mono font-semibold text-gray-900 mt-1">{avgRecordsPerFile !== undefined ? formatLargeNumber(avgRecordsPerFile) : renderLoadingPulse()}</div> <div className="text-sm text-gray-500 font-semibold mt-1">Avg live records / data file</div> </div>
+        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200"> <div className="text-xl font-semibold text-black">Total Files</div> <div className="text-2xl font-semibold font-mono text-black mt-1">{total_data_files !== undefined ? formatLargeNumber(total_data_files + (total_delete_files || 0)) : renderLoadingPulse()}</div> <div className="text-sm text-gray-500 font-semibold mt-1">Data {`(${total_data_files})`} + Delete files {`(${total_delete_files})`}</div> </div>
+        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200"> <div className="text-xl font-semibold text-black">Total Records</div> <div className="text-2xl font-mono font-semibold text-gray-900 mt-1">{approx_live_records !== undefined ? formatLargeNumber(approx_live_records) : renderLoadingPulse()}</div> <div className="text-sm text-gray-500 font-semibold mt-1">Approx. live records</div> </div>
+        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200"> <div className="text-xl font-semibold text-black">Avg Records/File</div> <div className="text-2xl font-mono font-semibold text-gray-900 mt-1">{(approx_live_records && total_data_files) ? formatLargeNumber(approx_live_records / total_data_files) : renderLoadingPulse()}</div> <div className="text-sm text-gray-500 font-semibold mt-1">Avg live records / data file</div> </div>
         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200"> <div className="text-xl font-semibold text-black">Avg File Size</div> <div className="text-2xl font-mono font-semibold text-gray-900 mt-1">{avgFileSizeMB !== undefined ? `${avgFileSizeMB.toFixed(2)} MB` : renderLoadingPulse()}</div> <div className="text-sm text-gray-500 font-semibold mt-1">Avg data file size (MB)</div> </div>
       </div>
 
@@ -224,18 +230,17 @@ export default function FilesViewer() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
             <div className="space-y-4">
-              <div><div className="text-sm font-medium text-gray-600">Avg. Record Count</div><div className="mt-1 text-lg font-mono">{avgRecordsPerFile !== undefined ? formatLargeNumber(avgRecordsPerFile) : 'N/A'}</div><div className="text-xs text-gray-500">per data file</div></div>
-              <div><div className="text-sm font-medium text-gray-600">Total Storage</div><div className="mt-1 text-lg font-mono">{totalStorageBytes !== undefined ? formatFileSize(totalStorageBytes) : 'N/A'}</div><div className="text-xs text-gray-500">for data files</div></div>
-              <div><div className="text-sm font-medium text-gray-600">Primary File Type</div><div className="mt-1 text-lg font-mono">{primaryFileType}</div><div className="text-xs text-gray-500">Detected format</div></div>
-
-            </div>
-            <div className="space-y-4">
               <div><div className="text-sm font-medium text-gray-600">Avg. File Size</div><div className="mt-1 text-lg font-mono">{avgFileSizeMB !== undefined ? `${avgFileSizeMB.toFixed(2)} MB` : 'N/A'}</div><div className="text-xs text-gray-500">per data file</div></div>
-              <div><div className="text-sm font-medium text-gray-600">Storage Efficiency</div><div className="mt-1 text-lg font-mono">{(approxLiveRecords !== undefined && totalStorageBytes !== undefined && totalStorageBytes > 0) ? `${(approxLiveRecords / (totalStorageBytes / (1024 * 1024))).toFixed(0)}` : 'N/A'}</div><div className="text-xs text-gray-500">live records per MB (approx.)</div></div>
+              <div><div className="text-sm font-medium text-gray-600">Storage Efficiency</div><div className="mt-1 text-lg font-mono">{(approxLiveRecords !== undefined && totalStorageBytes !== undefined && totalStorageBytes > 0) ? `${(approxLiveRecords / (totalStorageBytes / (1024 * 1024))).toFixed(0)}` : 'N/A'}</div><div className="text-xs text-gray-500">records per MB (approx.)</div></div>
               {/* Can add more metrics here if needed, e.g., delete file count/size */}
               {keyMetrics?.total_delete_files !== undefined && keyMetrics.total_delete_files > 0 && (
                 <div><div className="text-sm font-medium text-gray-600">Delete Files</div><div className="mt-1 text-lg font-mono">{formatLargeNumber(keyMetrics.total_delete_files)} ({formatFileSize(keyMetrics.total_delete_storage_bytes || 0)})</div><div className="text-xs text-gray-500">Count & Total Size</div></div>
               )}
+            </div>
+            <div className="space-y-4">
+              <div><div className="text-sm font-medium text-gray-600">Total Storage</div><div className="mt-1 text-lg font-mono">{totalStorageBytes !== undefined ? formatFileSize(totalStorageBytes) : 'N/A'}</div><div className="text-xs text-gray-500">for data files</div></div>
+              <div><div className="text-sm font-medium text-gray-600">Primary File Type</div><div className="mt-1 text-lg font-mono">{primaryFileType}</div><div className="text-xs text-gray-500">Detected format</div></div>
+
             </div>
           </div>
         )}

@@ -170,20 +170,26 @@ export default function PathInput({ onFetch, initialPath = '' }) {
 
 
   // --- Handle Selecting a Discovered Table ---
-  const handleTableSelect = (table) => {
+  const handleTableSelect = async (table) => {
     console.log("Selected table:", table);
-    setPath(table.path);
-    const detectedFormat = FORMAT_OPTIONS.includes(table.type) ? table.type : FORMAT_OPTIONS[0];
-    setFormat(detectedFormat);
-    onFetch(table.path, detectedFormat);
-    localStorage.setItem("s3path", table.path);
-    localStorage.setItem("format", detectedFormat);
-    fetchMetadataForTable(table.path, detectedFormat);
-    // Maybe keep list open? Or close it? Let's close it.
-    setIsTableListOpen(false);
-    // Keep discoveredTables in state? Could be useful to reopen. Let's clear it for now.
-    setDiscoveredTables([]);
+    setIsListingTables(true);
     setListTablesError(null);
+    setDiscoveredTables([]);
+    setIsTableListOpen(true);
+    try {
+      setPath(table.path);
+      const detectedFormat = FORMAT_OPTIONS.includes(table.type) ? table.type : FORMAT_OPTIONS[0];
+      setFormat(detectedFormat);
+      await onFetch(table.path, detectedFormat);
+      localStorage.setItem("s3path", table.path);
+      localStorage.setItem("format", detectedFormat);
+      await fetchMetadataForTable(table.path, detectedFormat);
+    } catch (error) {
+      const message = error.response?.data?.error || error.message || 'Failed to list tables.';
+      setListTablesError(message);
+    } finally {
+      setIsListingTables(false);
+    }
   };
 
   // Determine the text/state for the Collapsible Trigger
