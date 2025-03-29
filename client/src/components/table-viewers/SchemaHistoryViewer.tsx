@@ -307,7 +307,6 @@ export default function SchemaHistoryViewer({ responseData }) {
       diff.removed.forEach(field => changes.push({ versionId: previousVersion[versionIdKey], timestamp: previousVersion['timestamp-ms'], field: field.name, type: field.type, required: field.required, changeType: 'remove', }));
 
       diff.modified.forEach(mod => changes.push({ versionId: previousVersion[versionIdKey], timestamp: previousVersion['timestamp-ms'], field: mod.name, type: mod.type, required: mod.changes?.required?.to, changeType: 'modify', details: mod.changes }));
-
     }
     changes.sort((a, b) => b.timestamp - a.timestamp); // Newest change first
     return changes;
