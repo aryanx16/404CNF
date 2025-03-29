@@ -217,6 +217,7 @@ export default function PathInput({ onFetch, initialPath = '' }) {
         console.log("Selected table:", table);
         setIsListingTables(true); // Indicate loading
         setListTablesError(null);
+        setIsTableListOpen(false);
         // Keep the table list visible while loading the selected table
         // setDiscoveredTables([]); // Don't clear the list
         // setIsTableListOpen(true); // Keep open
