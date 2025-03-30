@@ -85,6 +85,8 @@ export default function SchemaViewer({ isPreview = false, onChange }: SchemaView
             <tr>
               <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Field Name</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Type</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Min</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Max</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Required</th>
               {/* Optional: Add Doc column if useful */}
               {/* <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Description</th> */}
@@ -98,6 +100,12 @@ export default function SchemaViewer({ isPreview = false, onChange }: SchemaView
                 {/* Use the helper function to render the type */}
                 <td className="px-4 py-3 text-sm text-neutral-500 break-words">
                   {renderType(field.type)}
+                </td>
+                <td className="px-4 py-3 text-sm text-neutral-700 break-words">
+                  {field.min_value || 0} 
+                </td>
+                <td className="px-4 py-3 text-sm text-neutral-700 break-words">
+                  {field.max_value || 0}
                 </td>
                 <td className="px-4 py-3 text-sm text-neutral-500">
                   {/* Handle required field potentially being undefined/null */}
