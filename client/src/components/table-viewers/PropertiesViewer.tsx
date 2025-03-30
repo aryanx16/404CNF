@@ -1,6 +1,10 @@
 import React from 'react';
 // import { TableMetadata } from '@shared/schema'; // Potentially unused
 import { formatBytes, getFormatDescription } from '@/lib/formatUtils';
+import { metadataAtom } from '@/atoms/metadataAtom';
+import { useRecoilValue } from 'recoil';
+import { FilesViewerSkeleton } from '../skeleton/FilesViewerSkeleton';
+import PropertiesViewerSkeleton from '../skeleton/PropertiesViewerSkeleton';
 // import { metadataAtom } from '@/atoms/metadataAtom'; // Potentially unused
 // import { useRecoilValue } from 'recoil'; // Potentially unused
 
@@ -82,7 +86,10 @@ const formatKey = (key: string): string => {
 
 
 export default function PropertiesViewer({ responseData, isPreview = false }: PropertiesViewerProps) {
-
+  const { loading, error, data: dataPayload } = useRecoilValue(metadataAtom);
+  if (loading && !dataPayload) {
+    return <PropertiesViewerSkeleton />;
+}
   // --- Check for essential data ---
   if (!responseData || !responseData.table_type || !responseData.format_configuration) {
     // ... (keep the 'No Properties Available' rendering)
