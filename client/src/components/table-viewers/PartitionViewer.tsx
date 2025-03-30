@@ -36,6 +36,14 @@ const getPartitionDisplayName = (name, value) => {
 
 
 export default function PartitionViewer({ metadata, isPreview = false, responseData }) {
+  // --- ALL HOOKS MUST BE CALLED AT THE TOP LEVEL ---
+  const { loading, error, data: dataPayload } = useRecoilValue(metadataAtom);
+  const [expandedPartitions, setExpandedPartitions] = useState({});
+  // MOVE THESE HOOKS UP!
+  const [activeView, setActiveView] = useState('tree');
+  const [vizType, setVizType] = useState('bar');
+
+  // --- useMemo hooks are also hooks, keep them early ---
   const partitions = useMemo(() => {
     if (!responseData || !responseData.partition_explorer) {
       return [];
@@ -81,8 +89,27 @@ export default function PartitionViewer({ metadata, isPreview = false, responseD
     return responseData.partition_spec.fields.map(field => field.name);
   }, [responseData]);
 
-  const [expandedPartitions, setExpandedPartitions] = useState({});
+  // Chart data calculation can also be moved up or kept here,
+  // as long as it's before the final return and after its dependencies (partitions).
+  const chartData = useMemo(() => {
+    // Ensure partitions exist before processing
+    if (!partitions || partitions.length === 0) return [];
 
+    return partitions
+      .filter(p => typeof p.size === 'number' && p.size > 0) // Ensure size is valid number > 0
+      .map(p => ({
+        name: `${p.name}=${p.value}`, // Use the combined key=value for uniqueness
+        value: p.size, // Value for the chart (size)
+        size: p.size,  // Keep original size for tooltip
+        rowCount: p.rowCount || 0, // Keep row count for tooltip
+        displaySize: formatBytes(p.size) // Pre-formatted size
+      }))
+      .sort((a, b) => b.size - a.size) // Sort descending by size
+      .slice(0, 20); // Limit to top 20 for performance/clarity
+  }, [partitions]);
+
+
+  // --- Non-Hook Helper Functions ---
   const togglePartition = (partitionId) => {
     setExpandedPartitions(prev => ({
       ...prev,
@@ -482,13 +509,11 @@ export default function PartitionViewer({ metadata, isPreview = false, responseD
                      </ResponsiveContainer>
                    </div>
                  )}
-
-
               </div>
             )}
           </div>
         )}
       </div>
     </div>
-  );
+);
 }

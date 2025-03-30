@@ -10,6 +10,8 @@ import { UserContext } from "@/App";
 import { useContext } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { TableMetadata } from '@shared/schema';
+import { useRecoilValue } from "recoil";
+import { formatAtom } from "@/atoms/formatAtom";
 
 // Define the possible tab values
 type TabValue = "overview" | "schema" | "partitions" | "versions" | "properties" | "sample-data";
@@ -26,10 +28,11 @@ const emptyTableMetadata: TableMetadata = {
 };
 
 export default function Home() {
-  const [path, setPath] = useState<string>("s3://analytics-bucket/customer_data/");
+  const [path, setPath] = useState<string>("s3://coep-inspiron-iceberg-demo/");
   const [activeTab, setActiveTab] = useState<TabValue>("overview");
   const { userId } = useContext(UserContext);
   const { toast } = useToast();
+   const globalFormat = useRecoilValue(formatAtom);
 
   // Fetch table metadata with userId for recent table tracking
   const { data: tableMetadata, isLoading, isError, error } = useTableMetadata(

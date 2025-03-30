@@ -1,6 +1,8 @@
 import React from 'react';
 import { useRecoilValue } from 'recoil';
 import { metadataAtom } from '@/atoms/metadataAtom';
+import { FilesViewerSkeleton } from '../skeleton/FilesViewerSkeleton';
+import { SchemaViewerSkeleton } from '../skeleton/SchemaViewerSkeleton';
 
 interface SchemaViewerProps {
   isPreview?: boolean;
@@ -40,9 +42,12 @@ const renderType = (type: any): string => {
 
 export default function SchemaViewer({ isPreview = false, onChange }: SchemaViewerProps) { // Added type annotation
   const response = useRecoilValue(metadataAtom);
+  const { loading, error, data: dataPayload } = useRecoilValue(metadataAtom);
   // Ensure response and deeper properties exist before accessing fields
   const fields = response?.data?.table_schema?.fields || [];
-
+  if (loading && !dataPayload) {
+        return <SchemaViewerSkeleton/>
+    }
   if (!fields.length) {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-neutral-200 mb-6 p-8 text-center">
