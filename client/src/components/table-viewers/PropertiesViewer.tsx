@@ -32,6 +32,53 @@ const formatTimestampMs = (timestampMs?: number): string | null => {
   }
 };
 
+// --- Helper to attempt interpreting partition bound values ---
+// NOTE: This is speculative. The exact meaning of hex bounds depends
+// on the Iceberg partition transform (days, hours, truncate, identity, etc.)
+// and the underlying data type. This function tries common interpretations.
+const formatPartitionBound = (boundValue: any, partitionKey: string): string => {
+    if (boundValue === null || boundValue === undefined) return 'N/A';
+
+    const valueStr = String(boundValue);
+
+    // Attempt Hex interpretation (common for date/timestamp transforms)
+    if (valueStr.startsWith('0x')) {
+        try {
+            const decimalValue = parseInt(valueStr, 16);
+            if (!isNaN(decimalValue)) {
+                // Heuristic: Check if key name suggests date/time
+                const keyLower = partitionKey.toLowerCase();
+                if (keyLower.includes('date') || keyLower.includes('day')) {
+                     // Assume days since epoch (common Iceberg transform)
+                     // Epoch is UTC midnight Jan 1, 1970
+                    const date = new Date(Date.UTC(1970, 0, 1));
+                    date.setUTCDate(date.getUTCDate() + decimalValue);
+                    if (!isNaN(date.getTime())) {
+                       return `${date.toISOString().split('T')[0]} (Raw: ${valueStr})`;
+                    }
+                } else if (keyLower.includes('time') || keyLower.includes('hour')) {
+                     // Assume hours since epoch (less common, more speculative)
+                    const date = new Date(Date.UTC(1970, 0, 1));
+                    date.setUTCHours(date.getUTCHours() + decimalValue);
+                     if (!isNaN(date.getTime())) {
+                         return `${date.toISOString()} (Raw: ${valueStr})`; // Show full timestamp
+                    }
+                }
+                 // Add more heuristics here if needed (e.g., for month, year transforms)
+
+                // Fallback: show decimal value if conversion failed or type unknown
+                 return `${decimalValue} (Raw: ${valueStr})`;
+            }
+        } catch (e) {
+           // Ignore parsing errors, fall through to string representation
+        }
+    }
+
+    // Default: return the original value as string if not hex or parsing failed
+    return valueStr;
+};
+
+
 // Define a type for the expected responseData structure (simplified for snapshot focus)
 interface SnapshotOverview {
     'snapshot-id': number | string;
@@ -42,12 +89,36 @@ interface SnapshotOverview {
     // Add other potential fields from snapshots_overview if needed
 }
 
+// Define structure for Manifest files, including partition bounds
+interface ManifestFile {
+    file_path: string;
+    size_bytes: number | null;
+    size_human: string;
+    type: string; // e.g., "Manifest List", "Manifest File"
+    relative_path?: string; // Primarily for Delta
+    partition_bounds?: Record<string, { // Optional partition bounds for Iceberg Manifest Files
+        contains_null?: boolean;
+        lower_bound?: any; // Can be string (hex), number, etc.
+        upper_bound?: any;
+    }>;
+}
+
+// Define structure for Delta Log files
+interface DeltaLogFile {
+    file_path: string;
+    relative_path: string;
+    size_bytes: number | null;
+    size_human: string;
+    // Delta doesn't typically expose partition bounds per log file this way
+}
+
+
 interface ResponseData {
   table_type?: string;
   format_version?: number;
   location?: string;
-  iceberg_manifest_files?: Array<{ /* ... */ file_path: string, size_bytes: number | null, size_human: string, type: string, relative_path?: string }>; // Added example structure
-  delta_log_files?: Array<{ /* ... */ file_path: string, relative_path: string, size_bytes: number | null, size_human: string }>; // Added example structure
+  iceberg_manifest_files?: Array<ManifestFile>; // Use refined ManifestFile type
+  delta_log_files?: Array<DeltaLogFile>; // Use refined DeltaLogFile type
   format_configuration?: Record<string, any>;
   current_snapshot_details?: Record<string, any>; // Can contain more details than summary
   key_metrics?: Record<string, any> & { metrics_note?: string }; // Added metrics_note here
@@ -154,9 +225,10 @@ export default function PropertiesViewer({ responseData, isPreview = false }: Pr
 
   // --- Extract top-level info ---
   const format = responseData.table_type || 'Unknown';
-  const manifestFiles = format.toLowerCase() === 'iceberg'
+  // Ensure correct typing for manifestFiles
+  const manifestFiles: Array<ManifestFile | DeltaLogFile> = (format.toLowerCase() === 'iceberg'
                       ? responseData.iceberg_manifest_files
-                      : responseData.delta_log_files;
+                      : responseData.delta_log_files) ?? []; // Provide default empty array
   const formatConfig = responseData.format_configuration;
   const formatVersion = responseData.format_version ?? formatConfig?.['format-version'] ?? '0';
   const location = responseData.location;
@@ -313,17 +385,45 @@ export default function PropertiesViewer({ responseData, isPreview = false }: Pr
                 {format === 'Iceberg' ? 'Manifest/Metadata Files (Current)' : 'Log Files (Current)'}
              </h3>
               <div className="border border-neutral-200 rounded-md overflow-hidden mb-4">
-                 <div className="bg-neutral-50 p-2 border-b border-neutral-200 flex justify-between items-center">
-                     <span className="text-xs font-medium">File Path</span>
-                     <span className="text-xs font-medium">Size</span>
+                 <div className="bg-neutral-50 p-2 border-b border-neutral-200 grid grid-cols-[1fr_auto] gap-2 items-center">
+                     <span className="text-xs font-medium">File Path / Bounds</span>
+                     <span className="text-xs font-medium text-right">Size</span>
                  </div>
-                 <div className="max-h-40 overflow-y-auto text-sm">
+                 <div className="max-h-60 overflow-y-auto text-sm"> {/* Increased max height */}
                      {manifestFiles.map((file, index) => (
-                         <div key={index} className="p-2 border-b border-neutral-100 flex justify-between items-center hover:bg-neutral-50">
-                             <span className="truncate w-4/5" title={file.file_path}>
-                                { (format === 'Delta' && file.relative_path) ? file.relative_path : file.file_path }
-                             </span>
-                             <span className="text-neutral-500 whitespace-nowrap pl-2">
+                         <div key={index} className="p-2 border-b border-neutral-100 grid grid-cols-[1fr_auto] gap-2 hover:bg-neutral-50">
+                             {/* File Path and Bounds */}
+                             <div>
+                                 {/* File Path */}
+                                 <span className="block truncate font-medium" title={file.file_path}>
+                                    { (format === 'Delta' && file.relative_path) ? file.relative_path : file.file_path }
+                                 </span>
+                                 {/* Partition Bounds (Only for Iceberg Manifest Files) */}
+                                 {format === 'Iceberg' && 'partition_bounds' in file && file.partition_bounds && (
+                                      <div className="text-xs text-neutral-500 mt-1 space-y-0.5 pl-2 border-l-2 border-neutral-200 ml-1">
+                                           {Object.entries(file.partition_bounds).map(([key, bounds]) => (
+                                                <div key={key}>
+                                                   <span className="font-mono text-[11px] bg-neutral-100 px-1 rounded text-neutral-600 mr-1" title={`Partition Key: ${key}`}>
+                                                        {key.length > 25 ? key.substring(0, 25) + '...' : key}
+                                                   </span>
+                                                   <span title={`Lower Bound: ${bounds.lower_bound}`}>
+                                                        LB: {formatPartitionBound(bounds.lower_bound, key)}
+                                                   </span>
+                                                   <span className="mx-1">|</span>
+                                                   <span title={`Upper Bound: ${bounds.upper_bound}`}>
+                                                        UB: {formatPartitionBound(bounds.upper_bound, key)}
+                                                   </span>
+                                                   {bounds.contains_null && (
+                                                      <span className="ml-2 text-orange-600" title="Contains Null Values"> Nulls</span>
+                                                   )}
+                                                </div>
+                                           ))}
+                                      </div>
+                                 )}
+                             </div>
+
+                             {/* Size */}
+                             <span className="text-neutral-500 whitespace-nowrap text-right self-start">
                                  {file.size_human || formatBytes(file.size_bytes)}
                              </span>
                          </div>
@@ -336,7 +436,7 @@ export default function PropertiesViewer({ responseData, isPreview = false }: Pr
           {/* Format Configuration section */}
           <h3 className="text-sm font-medium mb-2">Format Configuration</h3>
           <div className="bg-neutral-50 p-3 rounded-md border border-neutral-200 overflow-hidden mb-4">
-              <pre className="text-xs whitespace-pre-wrap break-words">
+              <pre className="text-xs whitespace-pre-wrap break-words max-h-40 overflow-y-auto"> {/* Added max-height and scroll */}
                   {formatConfig ? JSON.stringify(formatConfig, null, 2) : 'No configuration available'}
               </pre>
           </div>
@@ -507,4 +607,4 @@ export default function PropertiesViewer({ responseData, isPreview = false }: Pr
       </div>
     </div>
   );
-} 
+}

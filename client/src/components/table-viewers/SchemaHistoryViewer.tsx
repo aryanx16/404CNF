@@ -302,7 +302,7 @@ export default function SchemaHistoryViewer({ responseData }) {
 
      const safeParse = (val) => { if(val===null||val===undefined) return 0; const num=parseFloat(val); return isNaN(num)?0:num;};
      const calculateStatChange = (key) => { const v1=safeParse(summary1[key]);const v2=safeParse(summary2[key]);const diff=v2-v1;let pc=null;if(v1!==0){pc=(diff/Math.abs(v1))*100;}else if(diff!==0){pc=Infinity*Math.sign(diff);}else{pc=0;}return{value1:v1,value2:v2,diff,percentChange:pc};};
-     const statsToCompare = [{key:'total-records',label:'Total Records',format:(v)=>v.toLocaleString()},{key:'total-data-files',label:'Total Data Files',format:(v)=>v.toLocaleString()},{key:'total-delete-files',label:'Total Delete Files',format:(v)=>v.toLocaleString()},{key:'total-files-size',label:'Total Files Size',format:(v)=>formatBytes(v||0)},{key:'total-position-deletes',label:'Total Position Deletes',format:(v)=>v.toLocaleString()},{key:'total-equality-deletes',label:'Total Equality Deletes',format:(v)=>v.toLocaleString()},];
+     const statsToCompare = [{key:'total-records',label:'Total Records',format:(v)=>v.toLocaleString()},{key:'total-data-files',label:'Total Data Files',format:(v)=>v.toLocaleString()},{key:'total-delete-files',label:'Total Delete Files',format:(v)=>v.toLocaleString()},{key:'total-files-size',label:'Total Files Size',format:(v)=>formatBytes(v||0)},{key:'total-position-deletes',label:'Total Update Positions',format:(v)=>v.toLocaleString()},{key:'total-equality-deletes',label:'Total Equality Deletes',format:(v)=>v.toLocaleString()},];
 
      const results = statsToCompare.map(stat => ({ ...stat, ...calculateStatChange(stat.key) }));
 
