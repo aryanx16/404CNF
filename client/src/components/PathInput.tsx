@@ -36,7 +36,7 @@ const FORMAT_OPTIONS = ["Iceberg", "Delta", "Parquet", "Hudi", "Unknown"];
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 const LOADING_MESSAGES = [
-    "Connecting to S3...",
+    "Connecting to Bucket...",
     "Listing contents...",
     "Identifying tables...",
     "Analyzing structure...",
@@ -285,7 +285,7 @@ export default function PathInput({ onFetch, initialPath = '' }) {
                 {/* Path Input */}
                 <div className="flex-grow relative">
                     <div className="flex bg-neutral-50 border border-neutral-300 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary">
-                        <div className="bg-neutral-100 px-3 py-2 border-r border-neutral-300 text-neutral-600 text-sm whitespace-nowrap flex-shrink-0">S3 Path</div>
+                        <div className="bg-neutral-100 px-3 py-2 border-r border-neutral-300 text-neutral-600 text-sm whitespace-nowrap flex-shrink-0">Bucket Path</div>
                         <input
                             type="text"
                             className="flex-grow px-3 py-2 text-sm focus:outline-none w-full min-w-0" // Added w-full min-w-0

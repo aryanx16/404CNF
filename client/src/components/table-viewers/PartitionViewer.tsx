@@ -45,20 +45,18 @@ export default function PartitionViewer({ metadata, isPreview = false, responseD
       const partitionValue = p.partition_values[partitionKey];
 
       let displayName = partitionKey || 'unknown_key';
-      let displayValue = partitionValue; // Keep original value for potential complex logic later
+      let displayValue = partitionValue;
 
       // Adjust display name/value for the common unpartitioned case
       if (isTableUnpartitioned && partitionKey === '_raw' && typeof partitionValue === 'object' && Object.keys(partitionValue).length === 0) {
-          displayName = 'Table'; // Use 'Table' as the name
-          displayValue = {}; // Keep the original empty object to signify unpartitioned state internally if needed
-          // Or potentially set displayValue to a specific string marker like '<unpartitioned_marker>'
+          displayName = 'Table';
+          displayValue = {};
       }
 
       return {
         id: `${displayName}-${index}`, // Unique ID for keys/state
         name: displayName,
-        value: displayValue, // Store original value type, handle rendering separately
-        // Pre-calculate display string for convenience
+        value: displayValue,
         displayString: getPartitionDisplayName(displayName, displayValue),
         size: p.size_bytes,
         rowCount: p.gross_record_count,
@@ -413,7 +411,6 @@ export default function PartitionViewer({ metadata, isPreview = false, responseD
                   <div className="text-xs text-neutral-500 mb-2">
                     Showing top {chartData.length} partitions by size
                   </div>
-
 
                  {/* Bar Chart */}
                  {vizType === 'bar' && (
