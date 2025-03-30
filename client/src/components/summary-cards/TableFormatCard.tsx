@@ -6,6 +6,8 @@ interface TableFormatCardProps {
   metadata: TableMetadata;
 }
 
+import Pulse from '../skeleton/Pulse';
+
 export default function TableFormatCard({ metadata, data }) {
   const tableFormat = data?.table_type.toLowerCase();
   const formatIcon = getFormatIcon(tableFormat);
@@ -17,16 +19,24 @@ export default function TableFormatCard({ metadata, data }) {
       <div className="flex justify-between items-start">
         <div>
           <h3 className="text-sm font-medium text-neutral-500">Table Format</h3>
-          <p className="mt-1 text-lg font-semibold">{tableFormat?.charAt(0).toUpperCase() + tableFormat?.slice(1)}</p>
+          {
+            tableFormat ? 
+            <p className="mt-1 text-lg font-semibold">{tableFormat?.charAt(0).toUpperCase() + tableFormat?.slice(1)}</p>
+            :
+            <Pulse />
+          }
         </div>
         <div className="text-blue-500">
           <i className={`${formatIcon} text-2xl`}></i>
         </div>
       </div>
       <div className="mt-2 text-sm text-neutral-600">
-        {metadata.properties?.formatVersion && (
+        {data?.format_version ? (
           <p>Format Version: {data?.format_version}</p>
-        )}
+        )
+        :
+        <Pulse />
+        }
         {tableFormat === 'iceberg' && (
           <p>Spec: org.apache.iceberg.{data?.format_version || 'v2'}</p>
         )}

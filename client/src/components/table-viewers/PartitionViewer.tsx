@@ -12,30 +12,26 @@ const renderPartitionValue = (value) => {
     return 'null';
   }
   if (typeof value === 'object') {
-    // Handle empty object specifically for unpartitioned case representation
     if (Object.keys(value).length === 0) {
         return '<unpartitioned>';
     }
-    // Otherwise, stringify for display (though complex objects might not be ideal here)
     return JSON.stringify(value);
   }
-  return String(value); // Ensure it's a string
+  return String(value); 
 };
 
 // Helper to create the display name for a partition
 const getPartitionDisplayName = (name, value) => {
     const renderedValue = renderPartitionValue(value);
-    // If it's the special unpartitioned case, just show the name (e.g., "Table")
     if (renderedValue === '<unpartitioned>') {
-        // Maybe use a more descriptive name if the key indicates it's the whole table
         return name === '_raw' ? 'Table (Unpartitioned)' : `${name}=<unpartitioned>`;
     }
-    // Otherwise, format as key=value
     return `${name}=${renderedValue}`;
 }
 
 
 export default function PartitionViewer({ metadata, isPreview = false, responseData }) {
+
   const partitions = useMemo(() => {
     if (!responseData || !responseData.partition_explorer) {
       return [];
@@ -90,6 +86,48 @@ export default function PartitionViewer({ metadata, isPreview = false, responseD
     }));
   };
 
+  const [activeView, setActiveView] = useState('tree');
+  const [vizType, setVizType] = useState('bar'); // Default to bar
+
+  const chartData = useMemo(() => {
+    return partitions
+      .filter(p => typeof p.size === 'number') // Ensure size is valid
+      .map(p => ({
+        // Use displayString for the chart label name
+        name: p.displayString,
+        value: p.size || 0, // Use size for the chart value
+        size: p.size || 0, // Keep raw size for tooltip
+        rowCount: p.rowCount || 0, // Keep row count for tooltip
+        displaySize: formatBytes(p.size || 0)
+      }))
+      .sort((a, b) => b.size - a.size) // Sort by size descending
+      .slice(0, 20); // Limit to top 20 for performance/clarity
+  }, [partitions]);
+
+  // Custom tooltip for charts (remains the same, uses data derived above)
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-white p-2 border border-neutral-200 shadow-sm rounded-md text-xs">
+          <p className="font-medium">{data.name}</p> {/* Already the displayString */}
+          <p className="text-neutral-600">Size: {formatBytes(data.size)}</p>
+          {data.rowCount > 0 && (
+            <p className="text-neutral-600">Rows: {formatLargeNumber(data.rowCount)}</p>
+          )}
+        </div>
+      );
+    }
+    return null;
+  };
+
+
+  const COLORS = [
+    '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8',
+    '#82ca9d', '#ffc658', '#ff8373', '#a4de6c', '#d0ed57'
+  ];
+
+
   // --- No Partition Handling (remains the same) ---
   if (!partitions.length && (!responseData || !responseData.partition_explorer)) {
      // Only show if partition_explorer is explicitly missing or empty
@@ -113,7 +151,11 @@ export default function PartitionViewer({ metadata, isPreview = false, responseD
     // This condition might be less likely now with the above logic, but kept for safety
     return (
         <div className="bg-white rounded-lg shadow-sm border border-neutral-200 mb-6 p-8 text-center">
-          {/* ... No Partition Information message ... */}
+          <div className="text-3xl text-neutral-400 mb-2">
+            <i className="ri-table-line"></i>
+          </div>
+          <h3 className="text-lg font-medium text-neutral-700">No Partition Information</h3>
+          <p className="text-neutral-500 mt-1">Partition information is unavailable for this table.</p>
         </div>
       );
   }
@@ -213,45 +255,6 @@ export default function PartitionViewer({ metadata, isPreview = false, responseD
     );
   }
 
-
-  // --- Full View Logic ---
-  const [activeView, setActiveView] = useState('tree');
-  const [vizType, setVizType] = useState('bar'); // Default to bar
-
-  const chartData = useMemo(() => {
-    return partitions
-      .filter(p => typeof p.size === 'number') // Ensure size is valid
-      .map(p => ({
-        // Use displayString for the chart label name
-        name: p.displayString,
-        value: p.size || 0, // Use size for the chart value
-        size: p.size || 0, // Keep raw size for tooltip
-        rowCount: p.rowCount || 0, // Keep row count for tooltip
-        displaySize: formatBytes(p.size || 0)
-      }))
-      .sort((a, b) => b.size - a.size) // Sort by size descending
-      .slice(0, 20); // Limit to top 20 for performance/clarity
-  }, [partitions]);
-
-  // Custom tooltip for charts (remains the same, uses data derived above)
-  const CustomTooltip = ({ active, payload, label }) => {
-      if (active && payload && payload.length) {
-        const data = payload[0].payload;
-        return (
-          <div className="bg-white p-2 border border-neutral-200 shadow-sm rounded-md text-xs">
-            <p className="font-medium">{data.name}</p> {/* Already the displayString */}
-            <p className="text-neutral-600">Size: {formatBytes(data.size)}</p>
-            {data.rowCount > 0 && (
-              <p className="text-neutral-600">Rows: {formatLargeNumber(data.rowCount)}</p>
-            )}
-          </div>
-        );
-      }
-      return null;
-    };
-
-
-  const COLORS = [ /* ... (colors remain the same) ... */ ];
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-neutral-200 mb-6">

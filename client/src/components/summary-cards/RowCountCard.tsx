@@ -4,6 +4,8 @@ interface RowCountCardProps {
   data: any; 
 }
 
+import Pulse from '../skeleton/Pulse';
+
 
 export default function RowCountCard({ data }: RowCountCardProps) {
   const currentRows = data?.key_metrics?.approx_live_records;
@@ -14,14 +16,14 @@ export default function RowCountCard({ data }: RowCountCardProps) {
         <div className="flex justify-between items-start">
           <div>
             <h3 className="text-sm font-medium text-neutral-500">Row Count</h3>
-            <p className="mt-1 text-lg font-semibold">Unknown</p>
+            <Pulse />
           </div>
           <div className="text-green-500">
             <i className="ri-database-2-line text-2xl"></i>
           </div>
         </div>
         <div className="mt-2 text-sm text-neutral-600">
-          <p>No row count information available</p>
+          <Pulse />
         </div>
       </div>
     );
