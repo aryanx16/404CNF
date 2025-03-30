@@ -19,10 +19,11 @@ import { Badge } from '@/components/ui/badge';
 import { formatAtom } from '@/atoms/formatAtom'; // Make sure this atom's type is string | null
 
 const EXAMPLE_PATHS = [
-    "s3://coep-inspiron-delta-demo/",
     "s3://coep-inspiron-iceberg-demo/",
-    "s3://data-lake/sales/",
-    "s3://warehouse/"
+    "gs://coep-inspiron-iceberg-demo/",
+    "http://3.7.189.228:9000/coep-inspiron-iceberg-demo/",
+    "s3://coep-inspiron-delta-demo/",
+    "s3://coep-inspiron-parquet-demo/parquet-flights-table/",    
 ];
 
 // Make sure formatAtom's type definition allows string
@@ -31,7 +32,8 @@ const EXAMPLE_PATHS = [
 //   key: 'formatAtom',
 //   default: null, // Or maybe FORMAT_OPTIONS[0] if you want a default string?
 // });
-const FORMAT_OPTIONS = ["Iceberg", "Delta", "Parquet", "Hudi", "Unknown"];
+
+const FORMAT_OPTIONS = ["Iceberg", "Delta", "Parquet", "Hudi"];
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
@@ -202,8 +204,10 @@ export default function PathInput({ onFetch, initialPath = '' }) {
     const handleExampleClick = (examplePath: string) => {
         setPath(examplePath);
         setShowSuggestions(false);
-        // Clear previous results when selecting an example
         setDiscoveredTables([]);
+        if(examplePath.includes('iceberg')) setFormat('Iceberg');
+        else if (examplePath.includes('delta')) setFormat('Delta');
+        else if(examplePath.includes('parquet')) setFormat('Parquet');
         setListTablesError(null);
         setIsTableListOpen(false);
         setMetadataState({ loading: false, error: null, data: null }); // Clear metadata too
