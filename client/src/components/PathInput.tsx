@@ -302,7 +302,7 @@ export default function PathInput({ onFetch, initialPath = '' }) {
                             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} // Delay to allow click on suggestions
                          />
                     </div>
-                    {showSuggestions && path.length < 5 && ( // Show examples only if input is short or empty?
+                    {showSuggestions && path.length < 80 && ( // Show examples only if input is short or empty?
                         <div className="absolute z-10 w-full mt-1 bg-white border border-neutral-200 rounded-md shadow-lg">
                             <div className="p-2 border-b border-neutral-100"><h4 className="text-xs font-medium text-neutral-500 uppercase">Example Root Paths</h4></div>
                             <div className="max-h-40 overflow-y-auto">
