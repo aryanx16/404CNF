@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatBytes } from '@/lib/formatUtils'; // Assuming this utility exists
+import Pulse from '../skeleton/Pulse';
 
 interface StorageSizeCardProps {
   data: any;
@@ -31,7 +32,7 @@ export default function StorageSizeCard({ data }: StorageSizeCardProps) {
           <h3 className="text-sm font-medium text-neutral-500">Storage Size</h3>
           {/* Display total formatted size */}
           <p className="mt-1 text-lg font-semibold">
-             {hasTotalSize ? formatBytes(totalSizeBytes) : 'Unknown'}
+             {hasTotalSize ? formatBytes(totalSizeBytes) : <Pulse />}
           </p>
         </div>
         <div className="text-purple-500">
