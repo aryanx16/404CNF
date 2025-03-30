@@ -1,6 +1,7 @@
 import React from 'react';
 import { TableMetadata } from '@shared/schema';
 import { timeAgo } from '@/lib/formatUtils';
+import Pulse from '../skeleton/Pulse';
 
 interface VersionCardProps {
   metadata: TableMetadata;
@@ -37,18 +38,18 @@ export default function VersionCard({ metadata, data }) {
       <div className="flex justify-between items-start">
         <div>
           <h3 className="text-sm font-medium text-neutral-500">Current Version</h3>
-          <p className="mt-1 text-lg font-semibold">
+          {totalVersions ? <p className="mt-1 text-lg font-semibold">
             {metadata.format === 'iceberg' ? 'v' : ''}
-            {metadata.currentVersion || (latestVersion?.id || 'N/A')}
-          </p>
+            {totalVersions}
+          </p>: <Pulse />}
         </div>
         <div className="text-amber-500">
           <i className="ri-git-branch-line text-2xl"></i>
         </div>
       </div>
       <div className="mt-2 text-sm text-neutral-600">
-        <p>Last Updated: {latestVersion ? timeAgo(latestVersion['timestamp-ms']) : timeAgo(metadata.lastModified)}</p>
-        <p>Total {metadata.format === 'delta' ? 'Commits' : metadata.format === 'hudi' ? 'Commits' : 'Snapshots'}: {totalVersions}</p>
+        {latestVersion ? <p>Last Updated: { timeAgo(latestVersion['timestamp-ms'])}</p> : <Pulse />}
+        {totalVersions ? <p>Total {metadata.format === 'delta' ? 'Commits' : metadata.format === 'hudi' ? 'Commits' : 'Snapshots'}: {totalVersions}</p> : <Pulse />}
       </div>
     </div>
   );
