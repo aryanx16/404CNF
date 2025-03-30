@@ -251,7 +251,7 @@ export default function FilesViewer() {
                         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">File Count Breakdown</h3>
                             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Data files vs. Delete files</p>
-                            <div className="h-[240px] w-full">
+                            <div className="h-[240px] w-full ">
                                 {loading && !fileBreakdownData.hasData ? (
                                     <div className="h-full w-full flex items-center justify-center">
                                         {renderLoadingPulse("h-48 w-48 rounded-full")}
@@ -330,10 +330,10 @@ export default function FilesViewer() {
                                      {loading && (total_delete_files === undefined || totalDeleteStorageBytes === undefined)
                                          ? renderLoadingPulse('h-6 w-24')
                                          // Use total_delete_files for count, keyMetrics totalDeleteStorageBytes for size (use formatFileSize)
-                                         : `${formatLargeNumber(total_delete_files ?? 0)} (${formatFileSize(totalDeleteStorageBytes ?? 0)})`
+                                         : `${formatLargeNumber(total_delete_files ?? 0)} `
                                      }
                                 </div>
-                                <div className="text-xs text-gray-500 dark:text-gray-400">Count & Total Size</div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">Delete Files Count</div>
                             </div>
                         )}
                         {/* Show explicit 0 count/size if not Parquet and delete files are 0 or undefined */}

@@ -363,7 +363,7 @@ export default function PropertiesViewer({ responseData, isPreview = false }: Pr
                 // Use sequence number for the value, ensure it's a string or number consistent with state
                 value={selectedSequenceNumber ?? ''}
                 onChange={handleSnapshotChange}
-                className="w-full p-2 border border-neutral-300 rounded-md shadow-sm text-sm focus:ring-primary focus:border-primary"
+                className="w-full p-2 border border-neutral-300 rounded-md shadow-sm text-sm focus:ring-primary focus:border-primary "
                 disabled={loading || snapshots.length === 0} // Disable if loading or no snapshots
               >
                  {/* Add a default/placeholder option if desired */}

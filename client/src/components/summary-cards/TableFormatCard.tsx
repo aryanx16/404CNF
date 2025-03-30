@@ -35,7 +35,7 @@ export default function TableFormatCard({ metadata, data }) {
           <p>Format Version: {data?.format_version}</p>
         )
         :
-        <Pulse />
+        <></>
         }
         {tableFormat === 'iceberg' && (
           <p>Spec: org.apache.iceberg.{data?.format_version || 'v2'}</p>
