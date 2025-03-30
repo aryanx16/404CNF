@@ -60,10 +60,10 @@ export default function TabNavigation({ activeTab, onChange }: TabNavigationProp
                 ))}
             </div>
             {/* Query button remains unchanged */}
-            <button className="ml-4 bg-green-500 cursor-not-allowed hover:bg-green-600 text-white px-3 py-1.5 my-1 rounded-md text-sm font-medium transition-colors flex items-center flex-shrink-0"> {/* Added ml-4, flex-shrink-0 */}
+            {/* <button className="ml-4 bg-green-500 cursor-not-allowed hover:bg-green-600 text-white px-3 py-1.5 my-1 rounded-md text-sm font-medium transition-colors flex items-center flex-shrink-0">
                 <i className="ri-play-line mr-1.5"></i>
                 Query
-            </button>
+            </button> */}
         </div>
     );
 }

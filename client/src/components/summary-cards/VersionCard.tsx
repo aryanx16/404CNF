@@ -31,7 +31,7 @@ export default function VersionCard({ metadata, data }) {
   
   // For versioned formats (Iceberg, Delta, Hudi)
   const latestVersion = data?.version_history.current_snapshot_summary;
-  const totalVersions = data?.version_history.total_snapshots;
+  const totalVersions = data?.version_history.total_snapshots || 1;
   
   return (
     <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-4 hover:shadow-md transition-shadow">

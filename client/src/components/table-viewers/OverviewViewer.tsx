@@ -62,9 +62,7 @@ const OverviewViewer: React.FC<OverviewViewerProps> = ({ metadata, responseData,
                 <StorageSizeCard metadata={metadata} data={dataPayload} />
 
                 {/* Hide VersionCard if format is Parquet */}
-                {!isParquet && (
-                    <VersionCard metadata={metadata} data={dataPayload}/>
-                )}
+                <VersionCard metadata={metadata} data={dataPayload}/>
             </div>
 
             {/* Analytics Charts - Hide the whole grid if Parquet, as both charts inside will be hidden */}
