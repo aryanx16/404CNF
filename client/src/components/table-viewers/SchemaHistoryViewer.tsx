@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { Badge } from '@/components/ui/badge';
 import axios from 'axios';
 import { formatDate, timeAgo, formatBytes } from '@/lib/formatUtils'; // Assuming these utils exist
 import {
@@ -9,7 +10,6 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertCircle, Loader2, ArrowUp, ArrowDown, Minus, Sparkles } from 'lucide-react';
@@ -259,14 +259,18 @@ export default function SchemaHistoryViewer({ responseData }) {
 
    // --- Effect: Set initial dropdown values ---
    useEffect(() => {
-     if (versionOptions.length >= 2 && !selectedVersion1 && !selectedVersion2) {
-       setSelectedVersion1(versionOptions[1].value); // Default: second newest
-       setSelectedVersion2(versionOptions[0].value); // Default: newest
-     } else if (versionOptions.length === 1 && !selectedVersion1) {
-       setSelectedVersion1(versionOptions[0].value); setSelectedVersion2(null);
-     }
-     // eslint-disable-next-line react-hooks/exhaustive-deps
-   }, [versionOptions]); // Depend only on versionOptions array identity
+    if (versionOptions.length >= 2 && !selectedVersion1 && !selectedVersion2) {
+      // CHANGE HERE: Default 'Older' (v1) to the oldest version (last in reversed list)
+      setSelectedVersion1(versionOptions[0].value);
+      // Keep 'Newer' (v2) as the newest version (first in reversed list)
+      setSelectedVersion2(versionOptions[versionOptions.length - 1].value);
+    } else if (versionOptions.length === 1 && !selectedVersion1) {
+      // If only one version, select it for the first dropdown
+      setSelectedVersion1(versionOptions[0].value);
+      setSelectedVersion2(null); // Cannot compare with just one version
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [versionOptions]); // Depend only on versionOptions array identity
 
    // --- Effect: Fetch Schema Comparison, Calculate Stats, Fetch Summary on Selection Change ---
    useEffect(() => {
@@ -378,19 +382,174 @@ export default function SchemaHistoryViewer({ responseData }) {
       switch (changeType) { case 'add': return <Badge variant="success">Added</Badge>; case 'remove': return <Badge variant="destructive">Removed</Badge>; case 'modify': return <Badge variant="warning">Modified</Badge>; default: return null; }
   };
 
-  // --- Render schema comparison results ---
+// Import Badge if necessary
+  // import { Badge } from '@/components/ui/badge';
+
   const renderComparisonState = () => {
-       if (comparisonLoading) { return <div className="flex items-center justify-center text-neutral-500 py-10"><Loader2 className="mr-2 h-4 w-4 animate-spin" /><span>Loading comparison...</span></div>; }
-       if (comparisonError) { return <div className="flex items-center justify-center text-red-600 py-10 px-4 bg-red-50 border border-red-200 rounded-md"><AlertCircle className="mr-2 h-5 w-5" /><span className="text-sm">Error: {comparisonError}</span></div>; }
-       if (!comparisonData || !comparisonData.schema_comparison) { return <div className="text-center p-4 text-neutral-500">Select two different versions to compare schemas.</div>; }
+    // --- Loading, Error, and Initial State Checks ---
+    if (comparisonLoading) {
+        return (
+            <div className="flex items-center justify-center text-neutral-500 py-10">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <span>Loading comparison...</span>
+            </div>
+        );
+    }
+    if (comparisonError) {
+        return (
+            <div className="flex items-center justify-center text-red-600 py-10 px-4 bg-red-50 border border-red-200 rounded-md">
+                <AlertCircle className="mr-2 h-5 w-5" />
+                <span className="text-sm">Error: {comparisonError}</span>
+            </div>
+        );
+    }
+    // Ensure comparison data and its structure exist before proceeding
+    if (!comparisonData || !comparisonData.schema_comparison || !selectedVersion1 || !selectedVersion2) {
+        return (
+            <div className="text-center p-4 text-neutral-500">
+                Select two different versions to compare schemas.
+            </div>
+        );
+    }
+     if (selectedVersion1 === selectedVersion2) {
+        return (
+            <div className="text-center p-4 text-orange-600">
+                Please select two different versions to compare schemas.
+            </div>
+        );
+    }
 
-       const { added = [], removed = [], modified = [] } = comparisonData.schema_comparison;
-       const v1SchemaLabel = versionOptions.find(opt => opt.value === selectedVersion1)?.label || `${tableType === 'Iceberg' ? 'Seq' : 'V'}${selectedVersion1}`;
-       const v2SchemaLabel = versionOptions.find(opt => opt.value === selectedVersion2)?.label || `${tableType === 'Iceberg' ? 'Seq' : 'V'}${selectedVersion2}`;
 
-        return ( <> <div className="text-xs text-neutral-600 mb-3 text-center px-4"> Showing schema differences between <span className="font-semibold">{v1SchemaLabel}</span> and <span className="font-semibold">{v2SchemaLabel}</span>. </div> <div className="flex border rounded-md overflow-hidden"> <div className="flex-1 p-4 bg-red-50 border-r"> <h4 className="text-sm font-medium mb-2 text-red-800">Removed Fields ({removed.length})</h4> {removed.length > 0 ? removed.map((field, idx) => ( <div key={`cremove-${idx}-${field.name}`} className="text-sm mb-1 p-2 bg-white rounded border border-red-200 shadow-sm"><div className="font-medium">{field.name}</div><div className="text-xs text-neutral-600">Type: {renderType(field.type)}</div></div> )) : <div className="text-xs text-neutral-500 italic">None</div>} </div> <div className="flex-1 p-4 bg-yellow-50 border-r"> <h4 className="text-sm font-medium mb-2 text-yellow-800">Modified Fields ({modified.length})</h4> {modified.length > 0 ? modified.map((mod, idx) => ( <div key={`cmodify-${idx}-${mod.name}`} className="text-sm mb-1 p-2 bg-white rounded border border-yellow-200 shadow-sm"><div className="font-medium">{mod.name}</div> {/* Use renderType for displaying types */} {mod.changes?.type && <div className="text-xs"> Type: <span className="line-through text-red-600">{renderType(mod.changes.type.from)}</span> → <span className="text-green-600">{renderType(mod.changes.type.to)}</span> </div>} {mod.changes?.required !== undefined && <div className="text-xs"> Required: <span className={mod.changes.required.from ? "text-red-600" : ""}>{mod.changes.required.from ? 'Yes' : 'No'}</span> → <span className={mod.changes.required.to ? "text-green-600" : ""}>{mod.changes.required.to ? 'Yes' : 'No'}</span> </div>} </div> )) : <div className="text-xs text-neutral-500 italic">None</div>} </div> <div className="flex-1 p-4 bg-green-50"> <h4 className="text-sm font-medium mb-2 text-green-800">Added Fields ({added.length})</h4> {added.length > 0 ? added.map((field, idx) => ( <div key={`cadd-${idx}-${field.name}`} className="text-sm mb-1 p-2 bg-white rounded border border-green-200 shadow-sm"><div className="font-medium">{field.name}</div><div className="text-xs text-neutral-600">Type: {renderType(field.type)}</div><div className="text-xs text-neutral-600">Required: {field.required ? 'Yes' : 'No'}</div></div> )) : <div className="text-xs text-neutral-500 italic">None</div>} </div> </div> </> );
-  };
+    // --- Destructure Comparison Data (only need added and removed now) ---
+    // Provide default empty arrays to prevent errors if keys are missing
+    const { added = [], removed = [] } = comparisonData.schema_comparison;
 
+    // --- Get Labels for Selected Versions ---
+    const v1Option = versionOptions.find(opt => opt.value === selectedVersion1);
+    const v2Option = versionOptions.find(opt => opt.value === selectedVersion2);
+    const v1Label = v1Option?.label || `${tableType === 'Iceberg' ? 'Seq' : 'V'}${selectedVersion1}`;
+    const v2Label = v2Option?.label || `${tableType === 'Iceberg' ? 'Seq' : 'V'}${selectedVersion2}`;
+
+    // --- Placeholder calls for required helper functions (ensure these exist in your code) ---
+    const findHistoricalAddVersion = (fieldName) => {
+        // Search oldest first in historicalFieldChanges for the *initial* add
+        // Should return versionId or undefined
+        for (let i = historicalFieldChanges.length - 1; i >= 0; i--) {
+             const change = historicalFieldChanges[i];
+             if (change.field === fieldName && change.changeType === 'add') {
+                  // Basic check: Return the first add found searching backwards
+                 return change.versionId;
+             }
+         }
+         return undefined;
+    };
+
+    const findHistoricalRemoveVersion = (fieldName) => {
+        // Search oldest first in historicalFieldChanges for the *initial* remove
+        // Should return versionId or undefined
+        for (let i = historicalFieldChanges.length - 1; i >= 0; i--) {
+            const change = historicalFieldChanges[i];
+            if (change.field === fieldName && change.changeType === 'remove') {
+                return change.versionId;
+            }
+        }
+        return undefined;
+    };
+
+    // --- Helper Functions for Display ---
+    const getVersionPrefix = () => tableType === 'Iceberg' ? 'Seq' : 'V';
+    const formatVersionId = (id) => id !== undefined && id !== null ? `${getVersionPrefix()}${id}` : 'N/A'; // Handle undefined/null
+
+    // --- Render Comparison UI (Now 2 columns) ---
+    return (
+      <>
+         {/* Header */}
+         <div className="text-xs text-neutral-600 mb-4 text-center px-4">
+             Comparing schema between <span className="font-semibold">{v1Label}</span> and <span className="font-semibold">{v2Label}</span>.<br/>
+         </div>
+
+         {/* Grid Layout (adjusted to 2 columns) */}
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+             {/* Removed Fields Column */}
+             <div className="p-3 bg-red-50 rounded-lg border border-red-100 shadow-sm">
+                 <h4 className="text-sm font-semibold mb-3 text-red-700 text-center border-b border-red-100 pb-2">
+                     Removed Fields ({removed.length})
+                 </h4>
+                 {removed.length > 0 ? (
+                     <div className="space-y-2">
+                         {removed.map((field, idx) => {
+                             // Find the version where this field was ACTUALLY removed in history
+                             const removalVersion = findHistoricalRemoveVersion(field.name);
+                             return (
+                                 <div key={`cremove-${idx}-${field.name}`} className="text-sm p-2.5 bg-white rounded-md border border-red-100 shadow-sm transition-shadow hover:shadow-md">
+                                     <div className="flex justify-between items-start mb-1">
+                                         <span className="font-medium text-neutral-800">{field.name}</span>
+                                         {/* Display the found historical removal version */}
+                                         {removalVersion !== undefined ? (
+                                             /* Adjusted Badge: Less intense red */
+                                             <Badge variant="outline" className="text-xs h-5 px-1.5 whitespace-nowrap bg-red-100 text-red-700 border-red-200">Removed @ {formatVersionId(removalVersion)}</Badge>
+                                         ) : (
+                                             // Indicate if no explicit 'remove' action found in log
+                                             <Badge variant="outline" className="text-xs h-5 px-1.5 text-neutral-500 whitespace-nowrap">Removal not in log</Badge>
+                                         )}
+                                     </div>
+                                     <div className="text-xs text-neutral-600 mb-1">Type: <code className="text-xs bg-neutral-100 px-1 py-0.5 rounded">{renderType(field.type)}</code></div>
+                                     {/* Context relative to the comparison range */}
+                                     <div className="text-xs text-neutral-500 italic mt-1">Present in {v1Label}</div>
+                                 </div>
+                             );
+                         })}
+                     </div>
+                 ) : (
+                     <div className="text-xs text-center text-neutral-500 italic py-4">None</div>
+                 )}
+             </div>
+
+             {/* Added Fields Column */}
+             <div className="p-3 bg-green-50 rounded-lg border border-green-100 shadow-sm">
+                 <h4 className="text-sm font-semibold mb-3 text-green-700 text-center border-b border-green-100 pb-2">
+                     Added Fields ({added.length})
+                 </h4>
+                  {added.length > 0 ? (
+                     <div className="space-y-2">
+                         {added.map((field, idx) => {
+                             // Find the version where this field was ACTUALLY added in history
+                             const addVersion = findHistoricalAddVersion(field.name);
+                             return (
+                                 <div key={`cadd-${idx}-${field.name}`} className="text-sm p-2.5 bg-white rounded-md border border-green-100 shadow-sm transition-shadow hover:shadow-md">
+                                     <div className="flex justify-between items-start mb-1">
+                                         <span className="font-medium text-neutral-800">{field.name}</span>
+                                         {/* Display the found historical add version */}
+                                         {addVersion !== undefined ? (
+                                             /* Adjusted Badge: More vibrant green */
+                                             <Badge variant="outline" className="text-xs h-5 px-1.5 whitespace-nowrap bg-green-100 text-green-800 border-green-200 font-medium">Added @ {formatVersionId(addVersion)}</Badge>
+                                         ) : (
+                                             <Badge variant="outline" className="text-xs h-5 px-1.5 text-neutral-500 whitespace-nowrap">Add not in log</Badge>
+                                         )}
+                                     </div>
+                                     <div className="text-xs text-neutral-600 mb-1">Type: <code className="text-xs bg-neutral-100 px-1 py-0.5 rounded">{renderType(field.type)}</code></div>
+                                     <div className="text-xs text-neutral-600 mb-1">Required: <span className={`font-medium ${field.required === true ? 'text-green-700' : 'text-neutral-500'}`}>{field.required === true ? 'Yes' : 'No'}</span></div>
+                                      {/* Context relative to the comparison range */}
+                                     <div className="text-xs text-neutral-500 italic mt-1">Present in {v2Label}</div>
+                                 </div>
+                             );
+                          })}
+                      </div>
+                  ) : (
+                      <div className="text-xs text-center text-neutral-500 italic py-4">None</div>
+                  )}
+             </div>
+
+         </div> {/* End Grid */}
+      </>
+    );
+};
+
+
+
+// --- The rest of the SchemaHistoryViewer component remains the same ---
+// (renderStatsComparisonTable, main return with Tabs, etc.)
   // --- Render stats comparison table ---
   const renderStatsComparisonTable = () => {
     if (!selectedVersion1 || !selectedVersion2) { return <div className="text-center p-4 text-neutral-500">Please select two versions to compare statistics.</div>; }
